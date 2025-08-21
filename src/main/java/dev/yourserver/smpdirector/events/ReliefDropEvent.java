@@ -27,7 +27,6 @@ public class ReliefDropEvent implements DirectorEvent {
 
     @Override
     public void runFor(Player p) {
-{
     ConfigurationSection sec = plugin.getConfig().getConfigurationSection("events.relief_drop");
     if (sec == null) return;
 
