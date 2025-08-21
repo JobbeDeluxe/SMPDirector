@@ -58,9 +58,9 @@ for (String spec : pool) {
             String[] pc = spec.split("@");
             itemPart = pc[0].trim();
             String probStr = pc[1].trim().replace("%","");
-            double p = Double.parseDouble(probStr);
-            if (pc[1].contains("%")) p = p / 100.0;
-            chance = Math.max(0.0, Math.min(1.0, p));
+            double prob = Double.parseDouble(probStr);
+            if (pc[1].contains("%")) prob = prob / 100.0;
+            chance = Math.max(0.0, Math.min(1.0, prob));
         }
         if (random.nextDouble() > chance) continue;
 
@@ -96,7 +96,7 @@ barrel.update(true, false);
                     if (inv2.isEmpty()) {
                         b.setType(Material.AIR);
                         w.playSound(drop, Sound.BLOCK_BARREL_CLOSE, 0.8f, 0.8f);
-                        w.spawnParticle(Particle.SMOKE_LARGE, drop.clone().add(0.5, 0.8, 0.5), 10, 0.3,0.2,0.3, 0.01);
+                        w.spawnParticle(Particle.CLOUD, drop.clone().add(0.5, 0.8, 0.5), 10, 0.3,0.2,0.3, 0.01);
                     }
                 }
             }, removeAfter * 20L);

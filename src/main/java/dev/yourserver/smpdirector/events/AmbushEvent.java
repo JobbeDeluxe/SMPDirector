@@ -6,6 +6,7 @@ import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
@@ -67,10 +68,10 @@ public class AmbushEvent implements DirectorEvent {
             LivingEntity e = (LivingEntity) w.spawnEntity(loc, type);
             e.getPersistentDataContainer().set(tagKey, PersistentDataType.BYTE, (byte)1);
             e.setRemoveWhenFarAway(true);
-            e.setTarget(p);
+            if (e instanceof Mob mob) { mob.setTarget(p); }
 
             w.playSound(loc, Sound.ENTITY_ZOMBIE_AMBIENT, 1f, 0.8f + random.nextFloat()*0.4f);
-            w.spawnParticle(Particle.SMOKE_LARGE, loc, 8, 0.3,0.2,0.3, 0.01);
+            w.spawnParticle(Particle.CLOUD, loc, 8, 0.3,0.2,0.3, 0.01);
 
             spawned++;
         }

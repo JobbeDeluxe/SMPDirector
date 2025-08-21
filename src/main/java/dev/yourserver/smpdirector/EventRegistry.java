@@ -1,5 +1,10 @@
 package dev.yourserver.smpdirector;
 
+
+import dev.yourserver.smpdirector.events.AmbushEvent;
+import dev.yourserver.smpdirector.events.ReliefDropEvent;
+import dev.yourserver.smpdirector.events.WeatherCellEvent;
+
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
@@ -16,9 +21,9 @@ public class EventRegistry {
     public EventRegistry(SMPDirectorPlugin plugin) {
         this.plugin = plugin;
         // Register built-in events
-        events.add(new events.AmbushEvent(plugin));
-        events.add(new events.ReliefDropEvent(plugin));
-        events.add(new events.WeatherCellEvent(plugin));
+        events.add(new AmbushEvent(plugin));
+        events.add(new ReliefDropEvent(plugin));
+        events.add(new WeatherCellEvent(plugin));
     }
 
     public DirectorEvent pickFor(Player p) {
