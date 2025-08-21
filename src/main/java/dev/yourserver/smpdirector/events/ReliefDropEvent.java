@@ -82,31 +82,31 @@ for (String spec : pool) {
     } catch (Exception ignored) {}
 }
 barrel.update(true, false);
-
+        
         World w = p.getWorld();
-        fw.playSound(fdrop, Sound.ENTITY_PARROT_FLY, 1f, 1.2f);
-        fw.spawnParticle(Particle.CLOUD, fdrop.clone().add(0.5, 1.2, 0.5), 20, 0.4, 0.3, 0.4, 0.01);
+        w.playSound(drop, Sound.ENTITY_PARROT_FLY, 1f, 1.2f);
+        w.spawnParticle(Particle.CLOUD, drop.clone().add(0.5, 1.2, 0.5), 20, 0.4, 0.3, 0.4, 0.01);
         p.sendActionBar(ChatColor.AQUA + "Relief drop nearby!");
 
         // Schedule removal
         if (removeAfter > 0) {
-            
             final Block fb = b;
             final World fw = w;
-            final Location fdrop = drop.clone();Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            final Location fdrop = drop.clone();
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (fb.getType() == Material.BARREL) {
                     Inventory inv2 = ((Barrel) fb.getState()).getInventory();
                     if (inv2.isEmpty()) {
                         fb.setType(Material.AIR);
                         fw.playSound(fdrop, Sound.BLOCK_BARREL_CLOSE, 0.8f, 0.8f);
-                        fw.spawnParticle(Particle.CLOUD, fdrop.clone().add(0.5, 0.8, 0.5), 10, 0.3,0.2,0.3, 0.01);
+                        fw.spawnParticle(Particle.CLOUD, fdrop.clone().add(0.5, 0.8, 0.5), 10, 0.3, 0.2, 0.3, 0.01);
                     }
                 }
             }, removeAfter * 20L);
         }
-    }
 
-    private Location findDrop(Location base, int radius) {
+        
+private Location findDrop(Location base, int radius) {
         World w = base.getWorld();
         for (int i = 0; i < 30; i++) {
             int dx = -radius + random.nextInt(radius * 2 + 1);
