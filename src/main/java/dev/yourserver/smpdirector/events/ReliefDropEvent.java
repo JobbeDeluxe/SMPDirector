@@ -84,19 +84,22 @@ for (String spec : pool) {
 barrel.update(true, false);
 
         World w = p.getWorld();
-        w.playSound(drop, Sound.ENTITY_PARROT_FLY, 1f, 1.2f);
-        w.spawnParticle(Particle.CLOUD, drop.clone().add(0.5, 1.2, 0.5), 20, 0.4, 0.3, 0.4, 0.01);
+        fw.playSound(fdrop, Sound.ENTITY_PARROT_FLY, 1f, 1.2f);
+        fw.spawnParticle(Particle.CLOUD, fdrop.clone().add(0.5, 1.2, 0.5), 20, 0.4, 0.3, 0.4, 0.01);
         p.sendActionBar(ChatColor.AQUA + "Relief drop nearby!");
 
         // Schedule removal
         if (removeAfter > 0) {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                if (b.getType() == Material.BARREL) {
-                    Inventory inv2 = ((Barrel) b.getState()).getInventory();
+            
+            final Block fb = b;
+            final World fw = w;
+            final Location fdrop = drop.clone();Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (fb.getType() == Material.BARREL) {
+                    Inventory inv2 = ((Barrel) fb.getState()).getInventory();
                     if (inv2.isEmpty()) {
-                        b.setType(Material.AIR);
-                        w.playSound(drop, Sound.BLOCK_BARREL_CLOSE, 0.8f, 0.8f);
-                        w.spawnParticle(Particle.CLOUD, drop.clone().add(0.5, 0.8, 0.5), 10, 0.3,0.2,0.3, 0.01);
+                        fb.setType(Material.AIR);
+                        fw.playSound(fdrop, Sound.BLOCK_BARREL_CLOSE, 0.8f, 0.8f);
+                        fw.spawnParticle(Particle.CLOUD, fdrop.clone().add(0.5, 0.8, 0.5), 10, 0.3,0.2,0.3, 0.01);
                     }
                 }
             }, removeAfter * 20L);
