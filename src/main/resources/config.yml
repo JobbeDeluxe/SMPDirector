@@ -65,12 +65,14 @@ events:
 
 global:
   taggedMobKey: "director"
-  evaluateEverySeconds: 5
+  evaluateEverySeconds: 7
   minSecondsBetweenEvents: 90
+  minSecondsBetweenEventsJitter: 60
+  joinGraceSeconds: 20
   baseTriggerChance:
     calm: 0.12
     normal: 0.28
-    high: 0.55
+    high: 0.35
   bossbar:
     enabled: true
     title: "&bTension: &f%val%"

@@ -89,9 +89,9 @@ public class ReliefDropEvent implements DirectorEvent {
     final java.util.List<ItemStack> fItems = toAdd;
 
     // Fill inventory one tick later to ensure TE exists
-    Bukkit.getScheduler().runTask(plugin, () -> {
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
         org.bukkit.block.BlockState state = fb.getState();
-        if (!(state instanceof Barrel)) return;
+        if (!(state instanceof Barrel)) { fb.setType(Material.BARREL); state = fb.getState(); if (!(state instanceof Barrel)) return; }
         Barrel barrel = (Barrel) state;
         Inventory inv = barrel.getInventory();
 

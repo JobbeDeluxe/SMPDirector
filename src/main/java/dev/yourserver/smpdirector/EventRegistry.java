@@ -22,6 +22,10 @@ public class EventRegistry {
     private int minSecondsBetween = 90;
     private double chanceCalm = 0.12, chanceNormal = 0.28, chanceHigh = 0.55;
     private final Map<UUID, Long> lastAny = new HashMap<>();
+    private final Map<UUID, Long> nextAllowedAt = new HashMap<>();
+    private final Map<UUID, Long> joinedAt = new HashMap<>();
+    private int joinGraceSeconds = 20;
+    private int gapJitterSeconds = 60;
 
     public EventRegistry(SMPDirectorPlugin plugin) {
         this.plugin = plugin;
@@ -37,7 +41,9 @@ public class EventRegistry {
         this.minSecondsBetween = Math.max(0, cfg.getInt("global.minSecondsBetweenEvents", 90));
         this.chanceCalm = clamp01(cfg.getDouble("global.baseTriggerChance.calm", 0.12));
         this.chanceNormal = clamp01(cfg.getDouble("global.baseTriggerChance.normal", 0.28));
-        this.chanceHigh = clamp01(cfg.getDouble("global.baseTriggerChance.high", 0.55));
+        this.chanceHigh = clamp01(cfg.getDouble("global.baseTriggerChance.high", 0.35));
+        this.joinGraceSeconds = Math.max(0, cfg.getInt("global.joinGraceSeconds", 20));
+        this.gapJitterSeconds = Math.max(0, cfg.getInt("global.minSecondsBetweenEventsJitter", 60));
     }
 
     private double clamp01(double v){ return Math.max(0.0, Math.min(1.0, v)); }
@@ -47,8 +53,13 @@ public class EventRegistry {
     }
 
     public boolean canRunAny(Player p){
+        long now = System.currentTimeMillis();
+        long joined = joinedAt.getOrDefault(p.getUniqueId(), 0L);
+        if (joined > 0 && (now - joined) < (joinGraceSeconds * 1000L)) return false;
+        long next = nextAllowedAt.getOrDefault(p.getUniqueId(), 0L);
+        if (now < next) return false;
         long last = lastAny.getOrDefault(p.getUniqueId(), 0L);
-        return (System.currentTimeMillis() - last) >= (minSecondsBetween * 1000L);
+        return (now - last) >= (minSecondsBetween * 1000L);
     }
     public void markAny(Player p){
         lastAny.put(p.getUniqueId(), System.currentTimeMillis());
@@ -98,8 +109,11 @@ public class EventRegistry {
     }
 
     public void markRun(DirectorEvent ev, Player p) {
-        lastRun.computeIfAbsent(ev.id(), k -> new HashMap<>()).put(p.getUniqueId(), System.currentTimeMillis());
+        long now = System.currentTimeMillis();
+        lastRun.computeIfAbsent(ev.id(), k -> new HashMap<>()).put(p.getUniqueId(), now);
         markAny(p);
+        int jitter = gapJitterSeconds > 0 ? new java.util.Random().nextInt(gapJitterSeconds * 1000 + 1) : 0;
+        nextAllowedAt.put(p.getUniqueId(), now + (minSecondsBetween * 1000L) + jitter);
     }
 
     private int getWeight(String id, String band) {

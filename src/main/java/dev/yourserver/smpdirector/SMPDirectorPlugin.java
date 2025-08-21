@@ -23,7 +23,7 @@ public final class SMPDirectorPlugin extends JavaPlugin {
 
         // Listeners
         Bukkit.getPluginManager().registerEvents(new CombatListener(tensionManager), this);
-        Bukkit.getPluginManager().registerEvents(new PlayerStateListener(tensionManager), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerStateListener(tensionManager, eventRegistry), this);
 
         // Commands
         getCommand("director").setExecutor(new DirectorCommand(this, tensionManager, eventRegistry));
