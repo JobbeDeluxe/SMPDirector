@@ -9,15 +9,15 @@ softdepend: [PlaceholderAPI]
 commands:
   director:
     description: Control the SMP Director.
-    usage: /<command> <start|stop|pause|status|debug|trigger>
+    usage: /<command> <start|stop|pause|status|debug|trigger|list|reload>
     permission: director.admin
 
 permissions:
   director.admin:
-    description: Use start/stop/pause/status.
+    description: Use start/stop/pause/status/reload.
     default: op
   director.debug:
-    description: Use debug command.
+    description: Use debug and list.
     default: op
   director.trigger:
     description: Trigger specific events manually.

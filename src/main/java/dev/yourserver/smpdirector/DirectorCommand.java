@@ -22,7 +22,7 @@ public class DirectorCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage(ChatColor.YELLOW + "Usage: /" + label + " <start|stop|pause|status|debug|trigger>");
+            sender.sendMessage(ChatColor.YELLOW + "Usage: /" + label + " <start|stop|pause|status|debug|trigger|list|reload>");
             return true;
         }
         switch (args[0].toLowerCase()) {
@@ -48,6 +48,19 @@ public class DirectorCommand implements CommandExecutor {
                         sender.sendMessage(" - " + p.getName() + ": " + String.format("%.1f", tension.get(p.getUniqueId())));
                     }
                 }
+                return true;
+            }
+            case "list": {
+                sender.sendMessage(ChatColor.AQUA + "Available events:");
+                for (DirectorEvent ev : registry.getEvents()) {
+                    sender.sendMessage(ChatColor.GRAY + " - " + ev.id());
+                }
+                return true;
+            }
+            case "reload": {
+                plugin.reloadConfig();
+                registry.reloadSettings();
+                sender.sendMessage(ChatColor.GREEN + "SMPDirector config reloaded.");
                 return true;
             }
             case "trigger": {

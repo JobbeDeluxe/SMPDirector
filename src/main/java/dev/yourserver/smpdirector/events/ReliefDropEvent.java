@@ -18,27 +18,24 @@ public class ReliefDropEvent implements DirectorEvent {
     private final SMPDirectorPlugin plugin;
     private final Random random = new Random();
 
-    public ReliefDropEvent(SMPDirectorPlugin plugin) {
-        this.plugin = plugin;
-    }
+    public ReliefDropEvent(SMPDirectorPlugin plugin) { this.plugin = plugin; }
+
+    @Override public String id() { return "relief_drop"; }
 
     @Override
-    public String id() { return "relief_drop"; }
-
-    @Override
-    public boolean canRunFor(Player p) {
-        return p.getGameMode() == GameMode.SURVIVAL;
-    }
+    public boolean canRunFor(Player p) { return p.getGameMode() == GameMode.SURVIVAL; }
 
     @Override
     public void runFor(Player p) {
         ConfigurationSection sec = plugin.getConfig().getConfigurationSection("events.relief_drop");
         if (sec == null) return;
 
-        int radius = sec.getInt("radius", 6);
+        int radius = sec.getInt("radius", 8);
         int removeAfter = sec.getInt("removeAfterSeconds", 180);
+        int minItems = Math.max(1, sec.getInt("minItems", 2));
+        int maxItems = Math.max(minItems, sec.getInt("maxItems", 6));
         List<String> pool = sec.getStringList("lootPool");
-        if (pool == null || pool.isEmpty()) pool = List.of("BREAD:6-12","TORCH:16-32");
+        if (pool == null || pool.isEmpty()) pool = java.util.List.of("BREAD:6-12","TORCH:16-32");
 
         Location drop = findDrop(p.getLocation(), radius);
         if (drop == null) drop = p.getLocation();
@@ -48,9 +45,9 @@ public class ReliefDropEvent implements DirectorEvent {
         Barrel barrel = (Barrel) b.getState();
         Inventory inv = barrel.getInventory();
 
-        // Fill with randomized loot (supports optional chance via "@p" or "@p%")
-        // Examples: "DIAMOND:1-3@0.15", "GOLD_INGOT:2-8@25%", "BREAD:6-12"
+        int added = 0;
         for (String spec : pool) {
+            if (added >= maxItems) break;
             try {
                 String itemPart = spec;
                 double chance = 1.0;
@@ -79,7 +76,15 @@ public class ReliefDropEvent implements DirectorEvent {
                 if (max < min) { int t = min; min = max; max = t; }
                 int amount = min + random.nextInt(Math.max(1, (max - min + 1)));
                 inv.addItem(new ItemStack(mat, Math.min(amount, mat.getMaxStackSize())));
+                added++;
             } catch (Exception ignored) {}
+        }
+
+        // Ensure non-empty (fallback)
+        if (inv.isEmpty()) {
+            inv.addItem(new ItemStack(Material.BREAD, 6));
+            inv.addItem(new ItemStack(Material.TORCH, 16));
+            inv.addItem(new ItemStack(Material.IRON_INGOT, 4));
         }
         barrel.update(true, false);
 
@@ -87,8 +92,8 @@ public class ReliefDropEvent implements DirectorEvent {
         w.playSound(drop, Sound.ENTITY_PARROT_FLY, 1f, 1.2f);
         w.spawnParticle(Particle.CLOUD, drop.clone().add(0.5, 1.2, 0.5), 20, 0.4, 0.3, 0.4, 0.01);
         p.sendActionBar(ChatColor.AQUA + "Relief drop nearby!");
+        p.sendMessage(ChatColor.AQUA + "[SMPDirector] Relief drop at " + drop.getBlockX()+" "+drop.getBlockY()+" "+drop.getBlockZ());
 
-        // Schedule removal
         if (removeAfter > 0) {
             final Block fb = b;
             final World fw = w;

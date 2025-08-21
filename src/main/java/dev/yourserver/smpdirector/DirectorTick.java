@@ -8,6 +8,8 @@ public class DirectorTick implements Runnable {
     private final SMPDirectorPlugin plugin;
     private final TensionManager tension;
     private final EventRegistry registry;
+    private int tickSec = 0;
+    private final java.util.Random random = new java.util.Random();
 
     public DirectorTick(SMPDirectorPlugin plugin, TensionManager tension, EventRegistry registry) {
         this.plugin = plugin;
@@ -18,6 +20,7 @@ public class DirectorTick implements Runnable {
     @Override
     public void run() {
         if (!plugin.isDirectorEnabled()) return;
+        tickSec++;
 
         // Global decay
         tension.decayAll();
@@ -25,10 +28,16 @@ public class DirectorTick implements Runnable {
         for (Player p : Bukkit.getOnlinePlayers()) {
             tension.tickSensedInputs(p);
             tension.showOrUpdateBossbar(p);
-            DirectorEvent ev = registry.pickFor(p);
-            if (ev != null && ev.canRunFor(p)) {
-                ev.runFor(p);
-                registry.markRun(ev, p);
+            double val = tension.get(p.getUniqueId());
+            if (registry.shouldEvaluateTick(tickSec) && registry.canRunAny(p)) {
+                double chance = registry.chanceFor(val);
+                if (random.nextDouble() < chance) {
+                    DirectorEvent ev = registry.pickFor(p);
+                    if (ev != null && ev.canRunFor(p)) {
+                        ev.runFor(p);
+                        registry.markRun(ev, p);
+                    }
+                }
             }
         }
     }

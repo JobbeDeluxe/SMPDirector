@@ -1,11 +1,10 @@
 package dev.yourserver.smpdirector;
 
-
 import dev.yourserver.smpdirector.events.AmbushEvent;
 import dev.yourserver.smpdirector.events.ReliefDropEvent;
 import dev.yourserver.smpdirector.events.WeatherCellEvent;
-
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -18,18 +17,54 @@ public class EventRegistry {
     private final Map<String, Map<UUID, Long>> lastRun = new HashMap<>();
     private final Random random = new Random();
 
+    // Timing & chances
+    private int evalEverySeconds = 5;
+    private int minSecondsBetween = 90;
+    private double chanceCalm = 0.12, chanceNormal = 0.28, chanceHigh = 0.55;
+    private final Map<UUID, Long> lastAny = new HashMap<>();
+
     public EventRegistry(SMPDirectorPlugin plugin) {
         this.plugin = plugin;
-        // Register built-in events
         events.add(new AmbushEvent(plugin));
         events.add(new ReliefDropEvent(plugin));
         events.add(new WeatherCellEvent(plugin));
+        reloadSettings();
+    }
+
+    public void reloadSettings() {
+        FileConfiguration cfg = plugin.getConfig();
+        this.evalEverySeconds = Math.max(1, cfg.getInt("global.evaluateEverySeconds", 5));
+        this.minSecondsBetween = Math.max(0, cfg.getInt("global.minSecondsBetweenEvents", 90));
+        this.chanceCalm = clamp01(cfg.getDouble("global.baseTriggerChance.calm", 0.12));
+        this.chanceNormal = clamp01(cfg.getDouble("global.baseTriggerChance.normal", 0.28));
+        this.chanceHigh = clamp01(cfg.getDouble("global.baseTriggerChance.high", 0.55));
+    }
+
+    private double clamp01(double v){ return Math.max(0.0, Math.min(1.0, v)); }
+
+    public boolean shouldEvaluateTick(int tickSeconds){
+        return (tickSeconds % Math.max(1, evalEverySeconds)) == 0;
+    }
+
+    public boolean canRunAny(Player p){
+        long last = lastAny.getOrDefault(p.getUniqueId(), 0L);
+        return (System.currentTimeMillis() - last) >= (minSecondsBetween * 1000L);
+    }
+    public void markAny(Player p){
+        lastAny.put(p.getUniqueId(), System.currentTimeMillis());
+    }
+
+    public double chanceFor(double tensionVal){
+        String band = bandOf(tensionVal);
+        switch (band) {
+            case "calm": return chanceCalm;
+            case "high": return chanceHigh;
+            default: return chanceNormal;
+        }
     }
 
     public DirectorEvent pickFor(Player p) {
-        double val = plugin.getTensionManager().get(p.getUniqueId()); // helper method needed
-        // We cannot access getTensionManager() - add a helper or compute category from config via tension only.
-        // Workaround: Use TensionManager via reflection is ugly; better: pass val in. For now, we'll fetch via public accessor added.
+        double val = plugin.getTensionManager().get(p.getUniqueId());
         return weightedPick(p, val);
     }
 
@@ -64,6 +99,7 @@ public class EventRegistry {
 
     public void markRun(DirectorEvent ev, Player p) {
         lastRun.computeIfAbsent(ev.id(), k -> new HashMap<>()).put(p.getUniqueId(), System.currentTimeMillis());
+        markAny(p);
     }
 
     private int getWeight(String id, String band) {
@@ -75,7 +111,6 @@ public class EventRegistry {
     private String bandOf(double val) {
         double calm = plugin.getConfig().getDouble("thresholds.calm", 20);
         double high = plugin.getConfig().getDouble("thresholds.high", 80);
-        double normal = plugin.getConfig().getDouble("thresholds.normal", 50); // fallback if defined
         if (val < calm) return "calm";
         if (val >= high) return "high";
         return "normal";

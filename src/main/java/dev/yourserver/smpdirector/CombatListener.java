@@ -13,17 +13,13 @@ public class CombatListener implements Listener {
     @EventHandler
     public void onDamage(EntityDamageByEntityEvent e) {
         if (e.getEntity() instanceof Player p) {
-            tension.add(p.getUniqueId(), p.getServer().getPluginManager().getPlugin("SMPDirector") != null
-                    ? ((SMPDirectorPlugin)p.getServer().getPluginManager().getPlugin("SMPDirector")).getConfig().getDouble("tension.hit", 6)
-                    : 6);
+            tension.add(p.getUniqueId(), 6.0);
         }
     }
 
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
         Player p = e.getEntity();
-        tension.add(p.getUniqueId(), p.getServer().getPluginManager().getPlugin("SMPDirector") != null
-                ? ((SMPDirectorPlugin)p.getServer().getPluginManager().getPlugin("SMPDirector")).getConfig().getDouble("tension.death", 35)
-                : 35);
+        tension.add(p.getUniqueId(), 35.0);
     }
 }

@@ -8,7 +8,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 
 import java.util.*;
 
@@ -16,7 +15,6 @@ public class TensionManager {
     private final SMPDirectorPlugin plugin;
     private final Map<UUID, Double> map = new HashMap<>();
     private final Map<UUID, BossBar> bars = new HashMap<>();
-    private final Random random = new Random();
 
     public TensionManager(SMPDirectorPlugin plugin) {
         this.plugin = plugin;
@@ -38,17 +36,14 @@ public class TensionManager {
     public void tickSensedInputs(Player p) {
         FileConfiguration cfg = plugin.getConfig();
 
-        // Low food
         if (p.getFoodLevel() <= 7) add(p.getUniqueId(), cfg.getDouble("tension.lowFood", 3));
 
-        // Darkness around eye location
         int light = p.getLocation().getBlock().getLightLevel();
         if (light <= 7) add(p.getUniqueId(), cfg.getDouble("tension.darkness", 2));
 
-        // Nearby hostile mobs (approx. using LivingEntities, minus players)
         int radius = cfg.getInt("tension.nearMobRadius", 12);
         int count = 0;
-        for (Entity e : p.getNearbyEntities(radius, radius, radius)) {
+        for (org.bukkit.entity.Entity e : p.getNearbyEntities(radius, radius, radius)) {
             if (e instanceof LivingEntity && !(e instanceof Player)) {
                 count++;
             }
@@ -69,7 +64,6 @@ public class TensionManager {
         });
         double val = get(p.getUniqueId());
         bar.setProgress(Math.max(0.0, Math.min(1.0, val / 100.0)));
-        // Color by thresholds
         double calm = plugin.getConfig().getDouble("thresholds.calm", 20);
         double high = plugin.getConfig().getDouble("thresholds.high", 80);
         if (val < calm) bar.setColor(BarColor.GREEN);
@@ -77,8 +71,7 @@ public class TensionManager {
         else bar.setColor(BarColor.YELLOW);
 
         String title = plugin.getConfig().getString("global.bossbar.title", "&bTension: &f%val%");
-        title = title.replace("%val%", String.format("%.0f", val));
-        title = title.replace("&", "§");
+        title = title.replace("%val%", String.format("%.0f", val)).replace("&", "§");
         bar.setTitle(title);
         if (!bar.getPlayers().contains(p)) bar.addPlayer(p);
     }

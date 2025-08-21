@@ -9,9 +9,7 @@ public class PlayerStateListener implements Listener {
     private final TensionManager tension;
     public PlayerStateListener(TensionManager tension){ this.tension = tension; }
 
-    @EventHandler public void onJoin(PlayerJoinEvent e){
-        // bossbar will appear on first tick; ensure clean state
-    }
+    @EventHandler public void onJoin(PlayerJoinEvent e){}
     @EventHandler public void onQuit(PlayerQuitEvent e){
         tension.hideBossbar(e.getPlayer().getUniqueId());
     }

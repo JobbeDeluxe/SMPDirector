@@ -18,9 +18,7 @@ public class WeatherCellEvent implements DirectorEvent {
     @Override public String id() { return "weather_cell"; }
 
     @Override
-    public boolean canRunFor(Player p) {
-        return p.getGameMode() == GameMode.SURVIVAL;
-    }
+    public boolean canRunFor(Player p) { return p.getGameMode() == GameMode.SURVIVAL; }
 
     @Override
     public void runFor(Player p) {
@@ -32,7 +30,6 @@ public class WeatherCellEvent implements DirectorEvent {
         p.sendActionBar(ChatColor.BLUE + "A storm gathers above you...");
         World w = p.getWorld();
 
-        // lightning effects (visual)
         for (int i = 0; i < 4; i++) {
             int delay = 20 + random.nextInt(20 * Math.max(1, duration - 5));
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -61,7 +58,5 @@ public class WeatherCellEvent implements DirectorEvent {
     }
 
     @Override
-    public int cooldownSeconds() {
-        return plugin.getConfig().getInt("events.weather_cell.cooldownSeconds", 360);
-    }
+    public int cooldownSeconds() { return plugin.getConfig().getInt("events.weather_cell.cooldownSeconds", 360); }
 }

@@ -9,9 +9,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -30,7 +28,6 @@ public class AmbushEvent implements DirectorEvent {
 
     @Override
     public boolean canRunFor(Player p) {
-        // Basic: only in overworld-like conditions and not in spectator
         return p.getGameMode() == GameMode.SURVIVAL;
     }
 
@@ -39,38 +36,36 @@ public class AmbushEvent implements DirectorEvent {
         ConfigurationSection sec = plugin.getConfig().getConfigurationSection("events.ambush");
         if (sec == null) return;
         int count = sec.getInt("count", 4);
-        int radius = sec.getInt("radius", 8);
+        int radius = sec.getInt("radius", 12);
+        int minDist = Math.max(2, sec.getInt("minDistance", 7));
+        if (minDist >= radius) minDist = Math.max(2, radius - 1);
         List<String> mobNames = sec.getStringList("mobSet");
-        if (mobNames == null || mobNames.isEmpty()) mobNames = List.of("ZOMBIE","SKELETON");
+        if (mobNames == null || mobNames.isEmpty()) mobNames = java.util.List.of("ZOMBIE","SKELETON");
 
         World w = p.getWorld();
         Location base = p.getLocation();
 
         int spawned = 0;
         int tries = 0;
-        while (spawned < count && tries < count * 5) {
+        while (spawned < count && tries < count * 6) {
             tries++;
             double angle = random.nextDouble() * Math.PI * 2;
-            int dx = (int)Math.round(Math.cos(angle) * (2 + random.nextInt(Math.max(2, radius-1))));
-            int dz = (int)Math.round(Math.sin(angle) * (2 + random.nextInt(Math.max(2, radius-1))));
-            Location loc = base.clone().add(dx + 0.5, 0, dz + 0.5);
-            loc = highestSolidBelow(w, loc, 5);
+            int dist = minDist + random.nextInt(Math.max(1, radius - minDist + 1));
+            int dx = (int)Math.round(Math.cos(angle) * dist);
+            int dz = (int)Math.round(Math.sin(angle) * dist);
+            Location loc = highestSolidBelow(w, base.clone().add(dx + 0.5, 0, dz + 0.5), 6);
             if (loc == null) continue;
 
             String pick = mobNames.get(random.nextInt(mobNames.size()));
             EntityType type;
-            try {
-                type = EntityType.valueOf(pick.toUpperCase());
-            } catch (IllegalArgumentException ex) {
-                type = EntityType.ZOMBIE;
-            }
+            try { type = EntityType.valueOf(pick.toUpperCase()); }
+            catch (IllegalArgumentException ex) { type = EntityType.ZOMBIE; }
 
             LivingEntity e = (LivingEntity) w.spawnEntity(loc, type);
             e.getPersistentDataContainer().set(tagKey, PersistentDataType.BYTE, (byte)1);
             e.setRemoveWhenFarAway(true);
-            if (e instanceof Mob mob) { mob.setTarget(p); }
+            if (e instanceof Mob mob) mob.setTarget(p);
 
-            w.playSound(loc, Sound.ENTITY_ZOMBIE_AMBIENT, 1f, 0.8f + random.nextFloat()*0.4f);
             w.spawnParticle(Particle.CLOUD, loc, 8, 0.3,0.2,0.3, 0.01);
 
             spawned++;
@@ -80,14 +75,10 @@ public class AmbushEvent implements DirectorEvent {
     }
 
     private Location highestSolidBelow(World w, Location loc, int updown) {
-        Location test = loc.clone();
-        // adjust Y: try a few blocks up/down to land on ground
         for (int dy = updown; dy >= -updown; dy--) {
-            Location l = test.clone().add(0, dy, 0);
+            Location l = loc.clone().add(0, dy, 0);
             Material m = l.getBlock().getType();
-            if (!m.isAir() && m.isSolid()) {
-                return l.add(0, 1, 0);
-            }
+            if (!m.isAir() && m.isSolid()) return l.add(0,1,0);
         }
         return null;
     }

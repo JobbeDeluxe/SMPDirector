@@ -5,7 +5,7 @@
 
   <groupId>dev.yourserver</groupId>
   <artifactId>smp-director</artifactId>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <packaging>jar</packaging>
   <name>SMPDirector</name>
   <description>Dynamic event director for Paper servers.</description>
@@ -48,21 +48,6 @@
         <configuration>
           <release>17</release>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.5.1</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals><goal>shade</goal></goals>
-            <configuration>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
-              <minimizeJar>false</minimizeJar>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
