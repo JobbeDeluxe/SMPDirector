@@ -35,3 +35,7 @@ Every server second, the director ticks. It **only evaluates** a player every `e
 ---
 
 MIT License
+
+### Anti-spawn-camp
+- `global.joinGraceSeconds`: suppresses events right after a player joins.
+- `global.minSecondsBetweenEventsJitter`: adds randomness to the global gap so events don't feel periodic.
