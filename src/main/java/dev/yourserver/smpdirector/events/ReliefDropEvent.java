@@ -27,89 +27,106 @@ public class ReliefDropEvent implements DirectorEvent {
 
     @Override
     public void runFor(Player p) {
-        ConfigurationSection sec = plugin.getConfig().getConfigurationSection("events.relief_drop");
-        if (sec == null) return;
+{
+    ConfigurationSection sec = plugin.getConfig().getConfigurationSection("events.relief_drop");
+    if (sec == null) return;
 
-        int radius = sec.getInt("radius", 8);
-        int removeAfter = sec.getInt("removeAfterSeconds", 180);
-        int minItems = Math.max(1, sec.getInt("minItems", 2));
-        int maxItems = Math.max(minItems, sec.getInt("maxItems", 6));
-        List<String> pool = sec.getStringList("lootPool");
-        if (pool == null || pool.isEmpty()) pool = java.util.List.of("BREAD:6-12","TORCH:16-32");
+    int radius = sec.getInt("radius", 8);
+    int removeAfter = sec.getInt("removeAfterSeconds", 180);
+    int minItems = Math.max(1, sec.getInt("minItems", 2));
+    int maxItems = Math.max(minItems, sec.getInt("maxItems", 6));
+    java.util.List<String> pool = sec.getStringList("lootPool");
+    if (pool == null || pool.isEmpty()) pool = java.util.List.of("BREAD:6-12","TORCH:16-32");
 
-        Location drop = findDrop(p.getLocation(), radius);
-        if (drop == null) drop = p.getLocation();
+    Location drop = findDrop(p.getLocation(), radius);
+    if (drop == null) drop = p.getLocation();
 
-        Block b = drop.getBlock();
-        b.setType(Material.BARREL);
-        Barrel barrel = (Barrel) b.getState();
+    // Pre-calc items to add
+    java.util.List<ItemStack> toAdd = new java.util.ArrayList<>();
+    int added = 0;
+    java.util.Random rnd = this.random;
+    for (String spec : pool) {
+        if (added >= maxItems) break;
+        try {
+            String itemPart = spec;
+            double chance = 1.0;
+            if (spec.contains("@")) {
+                String[] pc = spec.split("@");
+                itemPart = pc[0].trim();
+                String probStr = pc[1].trim().replace("%","");
+                double prob = Double.parseDouble(probStr);
+                if (pc[1].contains("%")) prob = prob / 100.0;
+                chance = Math.max(0.0, Math.min(1.0, prob));
+            }
+            if (rnd.nextDouble() > chance) continue;
+
+            String[] parts = itemPart.split(":");
+            Material mat = Material.valueOf(parts[0].toUpperCase());
+            int min = 1, max = 1;
+            if (parts.length >= 2) {
+                String[] range = parts[1].split("-");
+                if (range.length == 2) {
+                    min = Integer.parseInt(range[0]);
+                    max = Integer.parseInt(range[1]);
+                } else {
+                    max = Integer.parseInt(parts[1]);
+                }
+            }
+            if (max < min) { int t = min; min = max; max = t; }
+            int amount = min + rnd.nextInt(Math.max(1, (max - min + 1)));
+            toAdd.add(new ItemStack(mat, Math.min(amount, mat.getMaxStackSize())));
+            added++;
+        } catch (Exception ignored) {}
+    }
+
+    // Place barrel block
+    Block b = drop.getBlock();
+    b.setType(Material.BARREL);
+
+    final Block fb = b;
+    final Location fdrop = drop.clone();
+    final World fw = p.getWorld();
+    final Player fp = p;
+    final java.util.List<ItemStack> fItems = toAdd;
+
+    // Fill inventory one tick later to ensure TE exists
+    Bukkit.getScheduler().runTask(plugin, () -> {
+        org.bukkit.block.BlockState state = fb.getState();
+        if (!(state instanceof Barrel)) return;
+        Barrel barrel = (Barrel) state;
         Inventory inv = barrel.getInventory();
 
-        int added = 0;
-        for (String spec : pool) {
-            if (added >= maxItems) break;
-            try {
-                String itemPart = spec;
-                double chance = 1.0;
-                if (spec.contains("@")) {
-                    String[] pc = spec.split("@");
-                    itemPart = pc[0].trim();
-                    String probStr = pc[1].trim().replace("%","");
-                    double prob = Double.parseDouble(probStr);
-                    if (pc[1].contains("%")) prob = prob / 100.0;
-                    chance = Math.max(0.0, Math.min(1.0, prob));
-                }
-                if (random.nextDouble() > chance) continue;
-
-                String[] parts = itemPart.split(":");
-                Material mat = Material.valueOf(parts[0].toUpperCase());
-                int min = 1, max = 1;
-                if (parts.length >= 2) {
-                    String[] range = parts[1].split("-");
-                    if (range.length == 2) {
-                        min = Integer.parseInt(range[0]);
-                        max = Integer.parseInt(range[1]);
-                    } else {
-                        max = Integer.parseInt(parts[1]);
-                    }
-                }
-                if (max < min) { int t = min; min = max; max = t; }
-                int amount = min + random.nextInt(Math.max(1, (max - min + 1)));
-                inv.addItem(new ItemStack(mat, Math.min(amount, mat.getMaxStackSize())));
-                added++;
-            } catch (Exception ignored) {}
-        }
-
-        // Ensure non-empty (fallback)
-        if (inv.isEmpty()) {
+        if (fItems.isEmpty()) {
+            // fallback content
             inv.addItem(new ItemStack(Material.BREAD, 6));
             inv.addItem(new ItemStack(Material.TORCH, 16));
             inv.addItem(new ItemStack(Material.IRON_INGOT, 4));
+        } else {
+            for (ItemStack is : fItems) inv.addItem(is);
         }
         barrel.update(true, false);
 
-        World w = p.getWorld();
-        w.playSound(drop, Sound.ENTITY_PARROT_FLY, 1f, 1.2f);
-        w.spawnParticle(Particle.CLOUD, drop.clone().add(0.5, 1.2, 0.5), 20, 0.4, 0.3, 0.4, 0.01);
-        p.sendActionBar(ChatColor.AQUA + "Relief drop nearby!");
-        p.sendMessage(ChatColor.AQUA + "[SMPDirector] Relief drop at " + drop.getBlockX()+" "+drop.getBlockY()+" "+drop.getBlockZ());
+        fw.playSound(fdrop, Sound.ENTITY_PARROT_FLY, 1f, 1.2f);
+        fw.spawnParticle(Particle.CLOUD, fdrop.clone().add(0.5, 1.2, 0.5), 20, 0.4, 0.3, 0.4, 0.01);
+        fp.sendActionBar(ChatColor.AQUA + "Relief drop nearby!");
+        fp.sendMessage(ChatColor.AQUA + "[SMPDirector] Relief drop at " + fdrop.getBlockX()+" "+fdrop.getBlockY()+" "+fdrop.getBlockZ());
+    });
 
-        if (removeAfter > 0) {
-            final Block fb = b;
-            final World fw = w;
-            final Location fdrop = drop.clone();
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                if (fb.getType() == Material.BARREL) {
-                    Inventory inv2 = ((Barrel) fb.getState()).getInventory();
-                    if (inv2.isEmpty()) {
-                        fb.setType(Material.AIR);
-                        fw.playSound(fdrop, Sound.BLOCK_BARREL_CLOSE, 0.8f, 0.8f);
-                        fw.spawnParticle(Particle.CLOUD, fdrop.clone().add(0.5, 0.8, 0.5), 10, 0.3, 0.2, 0.3, 0.01);
-                    }
+    // Schedule removal if still empty later
+    if (removeAfter > 0) {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            org.bukkit.block.BlockState state2 = fb.getState();
+            if (state2 instanceof Barrel) {
+                Inventory inv2 = ((Barrel) state2).getInventory();
+                if (inv2.isEmpty()) {
+                    fb.setType(Material.AIR);
+                    fw.playSound(fdrop, Sound.BLOCK_BARREL_CLOSE, 0.8f, 0.8f);
+                    fw.spawnParticle(Particle.CLOUD, fdrop.clone().add(0.5, 0.8, 0.5), 10, 0.3, 0.2, 0.3, 0.01);
                 }
-            }, removeAfter * 20L);
-        }
+            }
+        }, removeAfter * 20L);
     }
+}
 
     private Location findDrop(Location base, int radius) {
         World w = base.getWorld();
