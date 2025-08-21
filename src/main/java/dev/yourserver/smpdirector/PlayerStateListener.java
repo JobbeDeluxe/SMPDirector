@@ -7,15 +7,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerStateListener implements Listener {
     private final TensionManager tension;
-    private final EventRegistry registry;
-
-    public PlayerStateListener(TensionManager tension, EventRegistry registry){
-        this.tension = tension;
-        this.registry = registry;
-    }
+    public PlayerStateListener(TensionManager tension){ this.tension = tension; }
 
     @EventHandler public void onJoin(PlayerJoinEvent e){
-        registry.noteJoin(e.getPlayer().getUniqueId());
+        // Bossbar will show on first tick automatically; join grace handled inside EventRegistry.
     }
 
     @EventHandler public void onQuit(PlayerQuitEvent e){

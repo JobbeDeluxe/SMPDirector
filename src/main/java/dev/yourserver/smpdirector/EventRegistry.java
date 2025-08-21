@@ -23,7 +23,9 @@ public class EventRegistry {
     private double chanceCalm = 0.12, chanceNormal = 0.28, chanceHigh = 0.55;
     private final Map<UUID, Long> lastAny = new HashMap<>();
     private final Map<UUID, Long> nextAllowedAt = new HashMap<>();
-    private final Map<UUID, Long> joinedAt = new HashMap<>();
+    private final Map<UUID, Long> firstSeen = new HashMap<>();
+    private final Map<UUID, Long> nextAllowedAt = new HashMap<>();
+    
     private int joinGraceSeconds = 20;
     private int gapJitterSeconds = 60;
 
@@ -53,14 +55,16 @@ public class EventRegistry {
     }
 
     public boolean canRunAny(Player p){
-        long now = System.currentTimeMillis();
-        long joined = joinedAt.getOrDefault(p.getUniqueId(), 0L);
-        if (joined > 0 && (now - joined) < (joinGraceSeconds * 1000L)) return false;
-        long next = nextAllowedAt.getOrDefault(p.getUniqueId(), 0L);
-        if (now < next) return false;
-        long last = lastAny.getOrDefault(p.getUniqueId(), 0L);
-        return (now - last) >= (minSecondsBetween * 1000L);
-    }
+    long now = System.currentTimeMillis();
+    java.util.UUID id = p.getUniqueId();
+    Long seen = firstSeen.get(id);
+    if (seen == null) { firstSeen.put(id, now); return false; }
+    if ((now - seen) < (joinGraceSeconds * 1000L)) return false;
+    long next = nextAllowedAt.getOrDefault(id, 0L);
+    if (now < next) return false;
+    long last = lastAny.getOrDefault(id, 0L);
+    return (now - last) >= (minSecondsBetween * 1000L);
+}
     public void markAny(Player p){
         lastAny.put(p.getUniqueId(), System.currentTimeMillis());
     }
