@@ -1,0 +1,24 @@
+name: SMPDirector
+main: dev.yourserver.smpdirector.SMPDirectorPlugin
+version: ${project.version}
+api-version: '1.20'
+authors: [ "ChatGPT" ]
+description: Dynamic AI-like event director for SMP servers.
+softdepend: [PlaceholderAPI]
+
+commands:
+  director:
+    description: Control the SMP Director.
+    usage: /<command> <start|stop|pause|status|debug|trigger>
+    permission: director.admin
+
+permissions:
+  director.admin:
+    description: Use start/stop/pause/status.
+    default: op
+  director.debug:
+    description: Use debug command.
+    default: op
+  director.trigger:
+    description: Trigger specific events manually.
+    default: op
