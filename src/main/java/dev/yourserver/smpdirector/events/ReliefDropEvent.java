@@ -109,7 +109,7 @@ public class ReliefDropEvent implements DirectorEvent {
         fw.spawnParticle(Particle.CLOUD, fdrop.clone().add(0.5, 1.2, 0.5), 20, 0.4, 0.3, 0.4, 0.01);
         fp.sendActionBar(ChatColor.AQUA + "Relief drop nearby!");
         fp.sendMessage(ChatColor.AQUA + "[SMPDirector] Relief drop at " + fdrop.getBlockX()+" "+fdrop.getBlockY()+" "+fdrop.getBlockZ());
-    });
+    }, 2L);
 
     // Schedule removal if still empty later
     if (removeAfter > 0) {
