@@ -1,3 +1,4 @@
+
 package dev.yourserver.smpdirector;
 
 import dev.yourserver.smpdirector.events.AmbushEvent;
@@ -17,11 +18,14 @@ public class EventRegistry {
     private final Map<String, Map<UUID, Long>> lastRun = new HashMap<>();
     private final Random random = new Random();
 
+    // Timing & chances
     private int evalEverySeconds = 7;
     private int minSecondsBetween = 90;
     private int minSecondsBetweenJitter = 60;
     private int joinGraceSeconds = 20;
     private double chanceCalm = 0.12, chanceNormal = 0.28, chanceHigh = 0.35;
+
+    // Per-player timing state (DECLARED ONCE)
     private final Map<UUID, Long> lastAny = new HashMap<>();
     private final Map<UUID, Long> nextAllowedAt = new HashMap<>();
     private final Map<UUID, Long> firstSeen = new HashMap<>();
@@ -97,7 +101,7 @@ public class EventRegistry {
     }
 
     private int getWeight(String id, String band) {
-        org.bukkit.configuration.ConfigurationSection sec = plugin.getConfig().getConfigurationSection("events." + id + ".weight");
+        ConfigurationSection sec = plugin.getConfig().getConfigurationSection("events." + id + ".weight");
         if (sec == null) return 0;
         return sec.getInt(band, 0);
     }
