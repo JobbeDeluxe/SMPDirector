@@ -25,11 +25,7 @@ public class AmbushEvent implements DirectorEvent {
     }
 
     @Override public String id() { return "ambush"; }
-
-    @Override
-    public boolean canRunFor(Player p) {
-        return p.getGameMode() == GameMode.SURVIVAL;
-    }
+    @Override public boolean canRunFor(Player p) { return p.getGameMode() == GameMode.SURVIVAL; }
 
     @Override
     public void runFor(Player p) {
@@ -45,8 +41,7 @@ public class AmbushEvent implements DirectorEvent {
         World w = p.getWorld();
         Location base = p.getLocation();
 
-        int spawned = 0;
-        int tries = 0;
+        int spawned = 0, tries = 0;
         while (spawned < count && tries < count * 6) {
             tries++;
             double angle = random.nextDouble() * Math.PI * 2;
@@ -58,8 +53,7 @@ public class AmbushEvent implements DirectorEvent {
 
             String pick = mobNames.get(random.nextInt(mobNames.size()));
             EntityType type;
-            try { type = EntityType.valueOf(pick.toUpperCase()); }
-            catch (IllegalArgumentException ex) { type = EntityType.ZOMBIE; }
+            try { type = EntityType.valueOf(pick.toUpperCase()); } catch (IllegalArgumentException ex) { type = EntityType.ZOMBIE; }
 
             LivingEntity e = (LivingEntity) w.spawnEntity(loc, type);
             e.getPersistentDataContainer().set(tagKey, PersistentDataType.BYTE, (byte)1);
@@ -67,7 +61,6 @@ public class AmbushEvent implements DirectorEvent {
             if (e instanceof Mob mob) mob.setTarget(p);
 
             w.spawnParticle(Particle.CLOUD, loc, 8, 0.3,0.2,0.3, 0.01);
-
             spawned++;
         }
 
@@ -84,7 +77,5 @@ public class AmbushEvent implements DirectorEvent {
     }
 
     @Override
-    public int cooldownSeconds() {
-        return plugin.getConfig().getInt("events.ambush.cooldownSeconds", 240);
-    }
+    public int cooldownSeconds() { return plugin.getConfig().getInt("events.ambush.cooldownSeconds", 240); }
 }

@@ -2,28 +2,24 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <groupId>dev.yourserver</groupId>
   <artifactId>smp-director</artifactId>
-  <version>0.1.2</version>
+  <version>0.1.3-rc1</version>
   <packaging>jar</packaging>
   <name>SMPDirector</name>
   <description>Dynamic event director for Paper servers.</description>
-
   <properties>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <paper.version>1.20.6-R0.1-SNAPSHOT</paper.version>
+    <paper.version>1.21.4-R0.1-SNAPSHOT</paper.version>
   </properties>
-
   <repositories>
     <repository>
       <id>papermc-repo</id>
       <url>https://repo.papermc.io/repository/maven-public/</url>
     </repository>
   </repositories>
-
   <dependencies>
     <dependency>
       <groupId>io.papermc.paper</groupId>
@@ -32,7 +28,6 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
-
   <build>
     <resources>
       <resource>

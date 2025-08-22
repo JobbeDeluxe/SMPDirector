@@ -22,7 +22,6 @@ public class DirectorTick implements Runnable {
         if (!plugin.isDirectorEnabled()) return;
         tickSec++;
 
-        // Global decay
         tension.decayAll();
 
         for (Player p : Bukkit.getOnlinePlayers()) {

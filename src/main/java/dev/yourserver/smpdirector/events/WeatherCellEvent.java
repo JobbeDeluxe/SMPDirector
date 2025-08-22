@@ -12,13 +12,10 @@ public class WeatherCellEvent implements DirectorEvent {
 
     private final SMPDirectorPlugin plugin;
     private final Random random = new Random();
-
     public WeatherCellEvent(SMPDirectorPlugin plugin) { this.plugin = plugin; }
 
     @Override public String id() { return "weather_cell"; }
-
-    @Override
-    public boolean canRunFor(Player p) { return p.getGameMode() == GameMode.SURVIVAL; }
+    @Override public boolean canRunFor(Player p) { return p.getGameMode() == GameMode.SURVIVAL; }
 
     @Override
     public void runFor(Player p) {
@@ -57,6 +54,5 @@ public class WeatherCellEvent implements DirectorEvent {
         return null;
     }
 
-    @Override
-    public int cooldownSeconds() { return plugin.getConfig().getInt("events.weather_cell.cooldownSeconds", 360); }
+    @Override public int cooldownSeconds() { return plugin.getConfig().getInt("events.weather_cell.cooldownSeconds", 360); }
 }

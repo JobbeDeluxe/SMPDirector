@@ -10,7 +10,7 @@ public class PlayerStateListener implements Listener {
     public PlayerStateListener(TensionManager tension){ this.tension = tension; }
 
     @EventHandler public void onJoin(PlayerJoinEvent e){
-        // Bossbar will show on first tick automatically; join grace handled inside EventRegistry.
+        // Join grace handled internally via EventRegistry.firstSeen.
     }
 
     @EventHandler public void onQuit(PlayerQuitEvent e){

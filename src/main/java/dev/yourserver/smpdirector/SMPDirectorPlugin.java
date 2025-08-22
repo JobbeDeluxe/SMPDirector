@@ -21,16 +21,12 @@ public final class SMPDirectorPlugin extends JavaPlugin {
         this.tensionManager = new TensionManager(this);
         this.eventRegistry = new EventRegistry(this);
 
-        // Listeners
         Bukkit.getPluginManager().registerEvents(new CombatListener(tensionManager), this);
         Bukkit.getPluginManager().registerEvents(new PlayerStateListener(tensionManager), this);
 
-        // Commands
         getCommand("director").setExecutor(new DirectorCommand(this, tensionManager, eventRegistry));
 
-        // Tick loop (1s)
         startDirectorTick();
-
         getLogger().info("SMPDirector enabled.");
     }
 
@@ -55,10 +51,7 @@ public final class SMPDirectorPlugin extends JavaPlugin {
         enabled = false;
     }
 
-    public boolean isDirectorEnabled() {
-        return enabled;
-    }
-
+    public boolean isDirectorEnabled() { return enabled; }
     public EventRegistry getEventRegistry() { return eventRegistry; }
     public TensionManager getTensionManager(){ return tensionManager; }
 

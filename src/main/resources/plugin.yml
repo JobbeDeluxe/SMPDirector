@@ -14,11 +14,8 @@ commands:
 
 permissions:
   director.admin:
-    description: Use start/stop/pause/status/reload.
     default: op
   director.debug:
-    description: Use debug and list.
     default: op
   director.trigger:
-    description: Trigger specific events manually.
     default: op
